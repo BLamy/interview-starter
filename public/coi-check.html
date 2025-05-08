@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Origin Isolation Check</title>
+    <script src="register-coi-sw.js"></script>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .status { padding: 10px; border-radius: 4px; margin-bottom: 10px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Cross-Origin Isolation Status</h1>
+    <div id="coi-status" class="status"></div>
+    <div id="sab-status" class="status"></div>
+    <div id="sw-status" class="status"></div>
+    
+    <h2>Technical Details</h2>
+    <pre id="details"></pre>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const coiStatus = document.getElementById('coi-status');
+            const sabStatus = document.getElementById('sab-status');
+            const swStatus = document.getElementById('sw-status');
+            const details = document.getElementById('details');
+            
+            // Check cross-origin isolation
+            const isCrossOriginIsolated = window.crossOriginIsolated;
+            coiStatus.textContent = isCrossOriginIsolated 
+                ? '✅ Cross-Origin Isolation is enabled' 
+                : '❌ Cross-Origin Isolation is NOT enabled';
+            coiStatus.className = 'status ' + (isCrossOriginIsolated ? 'success' : 'error');
+            
+            // Check SharedArrayBuffer support
+            const isSharedArrayBufferAvailable = typeof SharedArrayBuffer === 'function';
+            sabStatus.textContent = isSharedArrayBufferAvailable 
+                ? '✅ SharedArrayBuffer is available' 
+                : '❌ SharedArrayBuffer is NOT available';
+            sabStatus.className = 'status ' + (isSharedArrayBufferAvailable ? 'success' : 'error');
+            
+            // Check service worker registration
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration('./coi-serviceworker.js')
+                    .then(registration => {
+                        if (registration) {
+                            swStatus.textContent = '✅ COI Service Worker is registered';
+                            swStatus.className = 'status success';
+                        } else {
+                            swStatus.textContent = '⚠️ COI Service Worker is not registered yet';
+                            swStatus.className = 'status warning';
+                        }
+                    })
+                    .catch(error => {
+                        swStatus.textContent = '❌ Error checking service worker: ' + error.message;
+                        swStatus.className = 'status error';
+                    });
+            } else {
+                swStatus.textContent = '❌ Service Workers are not supported in this browser';
+                swStatus.className = 'status error';
+            }
+            
+            // Display technical details
+            details.textContent = JSON.stringify({
+                crossOriginIsolated: isCrossOriginIsolated,
+                sharedArrayBufferAvailable: isSharedArrayBufferAvailable,
+                serviceWorkerSupported: 'serviceWorker' in navigator,
+                headers: {
+                    'Cross-Origin-Embedder-Policy': 'require-corp',
+                    'Cross-Origin-Opener-Policy': 'same-origin'
+                },
+                userAgent: navigator.userAgent
+            }, null, 2);
+        });
+    </script>
+</body>
+</html> 
