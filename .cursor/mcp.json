@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "wallaby": {
+      "command": "node",
+      "args": [
+        "~/.wallaby/mcp/"
+      ]
+    },
+    "chrome-dev-tools": {
+      "command": "node",
+      "args": [
+        "./.cursor/browser-tools-wrapper.js"
+      ]
+    }
+  }
+}
